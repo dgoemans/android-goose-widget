@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_loading">loading...</string>
+    <string name="widget_name">Goose Widget</string>
+    <string name="widget_name_med">Goose Widget (3x3)</string>
+    <string name="widget_name_large">Goose Widget (4x4)</string>
+	<string name="widget_desc">A widget with Abstruse Goose Comics!</string>
+	<string name="widget_err">An error occured</string>
+</resources>
