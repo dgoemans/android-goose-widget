@@ -94,37 +94,43 @@ public class UpdateService extends Service
             img = Bitmap.createScaledBitmap(intermediate, (int) (size*ar), (int) size, false);
             
             // Then create the content file for later!
-            
+
+			SharedPreferences prefs = getSharedPreferences(GooseWidget.PREFS_NAME, 0);
+			
+			SharedPreferences.Editor ed = prefs.edit();
+			ed.putString("imagePath", current.imageURL );
+			ed.commit();
+			
+			/*
+			String path = prefs.getString("imagePath", "");
+			Uri imageUri;
+			if( path.length() == 0 || !(new File(path)).exists()  )
+			{
+				Log.d("Goose", String.valueOf( (new File(path)).exists() ) );
+				Log.d("Goose", path );
+				
+				imageUri = getContentResolver().insert(Media.EXTERNAL_CONTENT_URI, values);
+
+				SharedPreferences.Editor ed = prefs.edit();
+				ed.putString("imagePath", imageUri.toString() );
+				ed.commit();
+			}
+			else
+			{
+				imageUri = Uri.parse(path);
+			}
+
 			ContentValues values = new ContentValues(2);
 			values.put(Media.DISPLAY_NAME, current.title);
 			//values.put(Media.DESCRIPTION, );
 			values.put(Media.MIME_TYPE, "image/png");
 
-			SharedPreferences prefs = getSharedPreferences(GooseWidget.PREFS_NAME, 0);
-			
-			String path = prefs.getString("imagePath", "");
-			
-			/*
-			if( path.length() != 0 )
-			{
-				getContentResolver().delete(Uri.parse(path), "1=1", null );
-			}
-			*/
-			
-			Uri imageUri = getContentResolver().insert(Media.EXTERNAL_CONTENT_URI, values);
-			
-
-			SharedPreferences.Editor ed = prefs.edit();
-			ed.putString("imagePath", imageUri.toString() );
-			ed.commit();
-
-			
 			OutputStream out =  getContentResolver().openOutputStream(imageUri);
             intermediate.compress(CompressFormat.PNG, 7, out);
 
             Log.d("Goose", imageUri.toString() );
             out.flush();
-            out.close();
+            out.close();*/
             
 		} 
     	catch (Exception e) 
