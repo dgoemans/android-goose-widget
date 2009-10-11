@@ -6,8 +6,10 @@
     <string name="widget_name_large">Goose Widget (4x4)</string>
 	<string name="widget_desc">A widget with Abstruse Goose Comics!</string>
 	<string name="widget_err">An error occured</string>
-	<string name="menu_ref">refresh!</string>
-	<string name="menu_go">Goto Goose</string>
+	<string name="menu_ref">Refresh</string>
+	<string name="menu_view">View</string>
+	<string name="menu_view_broken">= SD Not Mounted =</string>
+	<string name="menu_go">Goto the Goose</string>
 	<string name="menu_feed">Feed the Goose</string>
 	<string name="menu_dev">Meet the dev</string>
 </resources>

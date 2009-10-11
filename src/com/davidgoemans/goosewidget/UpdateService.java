@@ -1,6 +1,9 @@
 package com.davidgoemans.goosewidget;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -16,12 +19,16 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
 import android.os.IBinder;
+import android.provider.MediaStore.Images.Media;
 import android.util.Log;
 import android.view.ViewDebug.FlagToString;
 import android.widget.RemoteViews;
@@ -85,6 +92,39 @@ public class UpdateService extends Service
             float size = 400.0f;
             
             img = Bitmap.createScaledBitmap(intermediate, (int) (size*ar), (int) size, false);
+            
+            // Then create the content file for later!
+            
+			ContentValues values = new ContentValues(2);
+			values.put(Media.DISPLAY_NAME, current.title);
+			//values.put(Media.DESCRIPTION, );
+			values.put(Media.MIME_TYPE, "image/png");
+
+			SharedPreferences prefs = getSharedPreferences(GooseWidget.PREFS_NAME, 0);
+			
+			String path = prefs.getString("imagePath", "");
+			
+			/*
+			if( path.length() != 0 )
+			{
+				getContentResolver().delete(Uri.parse(path), "1=1", null );
+			}
+			*/
+			
+			Uri imageUri = getContentResolver().insert(Media.EXTERNAL_CONTENT_URI, values);
+			
+
+			SharedPreferences.Editor ed = prefs.edit();
+			ed.putString("imagePath", imageUri.toString() );
+			ed.commit();
+
+			
+			OutputStream out =  getContentResolver().openOutputStream(imageUri);
+            intermediate.compress(CompressFormat.PNG, 7, out);
+
+            Log.d("Goose", imageUri.toString() );
+            out.flush();
+            out.close();
             
 		} 
     	catch (Exception e) 

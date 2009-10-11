@@ -9,11 +9,9 @@
 		<activity
             android:name=".GooseMenu"
             android:label="@string/widget_name"
-            android:excludeFromRecents="true">
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.Dialog" >
 
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
-            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -33,7 +31,7 @@
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_goose_large" />
         </receiver>
-
+		
         <service android:name=".UpdateService" />
     
     </application>
