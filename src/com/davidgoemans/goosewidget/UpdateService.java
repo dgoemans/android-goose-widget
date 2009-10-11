@@ -23,6 +23,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.ViewDebug.FlagToString;
 import android.widget.RemoteViews;
 
 public class UpdateService extends Service 
@@ -70,6 +71,7 @@ public class UpdateService extends Service
 			
 			HttpURLConnection conn= (HttpURLConnection)site.openConnection();
 			conn.setDoInput(true);
+			conn.setReadTimeout(5000);
 			conn.connect();
 			InputStream is = conn.getInputStream();
 
@@ -80,7 +82,7 @@ public class UpdateService extends Service
             Log.d("Width:", Float.toString(intermediate.getWidth()) );
             Log.d("Height:", Float.toString(intermediate.getHeight()) );
 
-            float size = 500.0f;
+            float size = 400.0f;
             
             img = Bitmap.createScaledBitmap(intermediate, (int) (size*ar), (int) size, false);
             
@@ -96,12 +98,6 @@ public class UpdateService extends Service
         	
         	views.setImageViewBitmap(R.id.comic_image, img);
         	
-        	
-        	// When user taps, go to the goose!
-            Intent defineIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(current.link));
-            PendingIntent pendingIntent = PendingIntent.getActivity(context,
-                    0 /* no requestCode */, defineIntent, 0 /* no flags */);
-            views.setOnClickPendingIntent(R.id.widget, pendingIntent);
         }
         else
         {
@@ -109,6 +105,12 @@ public class UpdateService extends Service
         	views.setTextViewText(R.id.message, context.getString(R.string.widget_err));
         	views.setImageViewResource(R.id.comic_image, R.drawable.error);
         }
+
+    	// When user taps, go to the goose!
+        Intent defineIntent = new Intent(context, GooseMenu.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context,
+                0 /* no requestCode */, defineIntent, 0 /* no flags */);
+        views.setOnClickPendingIntent(R.id.widget, pendingIntent);
 
         return views;
         

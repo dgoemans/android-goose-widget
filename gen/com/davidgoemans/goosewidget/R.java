@@ -28,8 +28,14 @@ public final class R {
         public static final int large=0x7f030000;
         public static final int main=0x7f030001;
         public static final int medium=0x7f030002;
+        public static final int menu=0x7f030003;
+        public static final int menu_item=0x7f030004;
     }
     public static final class string {
+        public static final int menu_dev=0x7f050009;
+        public static final int menu_feed=0x7f050008;
+        public static final int menu_go=0x7f050007;
+        public static final int menu_ref=0x7f050006;
         public static final int widget_desc=0x7f050004;
         public static final int widget_err=0x7f050005;
         public static final int widget_loading=0x7f050000;
