@@ -16,7 +16,35 @@
     android:text="@string/widget_loading"
     style="@style/Text.Loading"
     />
-    
+
+<!-- 
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/widget"
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
+
+	<Button
+		android:id="@+id/zin"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginLeft="10dip"
+		android:width="10dip"
+		android:height="10dip"
+		android:text="+" />
+				
+	<Button
+		android:id="@+id/zout"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginLeft="10dip"
+		android:width="10dip"
+		android:height="10dip"
+		android:text="-" />
+		
+</LinearLayout>
+-->
+ 
 <ImageView
         android:id="@+id/comic_image"
         android:layout_width="fill_parent" 
@@ -26,5 +54,6 @@
         android:layout_marginRight="13dip"
         android:layout_marginBottom="15dip"
         android:src="@drawable/icon" />
+
 
 </LinearLayout>
