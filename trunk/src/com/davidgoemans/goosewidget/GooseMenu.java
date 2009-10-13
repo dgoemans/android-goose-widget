@@ -15,24 +15,19 @@ public class GooseMenu extends ListActivity
 	@Override
 	public void onCreate(Bundle savedInstanceState) 
 	{		
-		menuEntries = new String[5];
+		menuEntries = new String[7];
 		menuEntries[0] = getString(R.string.menu_ref);
 		
-		Log.d("Goose", String.valueOf( android.os.Environment.getExternalStorageState() ) );
+		//Log.d("Goose", String.valueOf( android.os.Environment.getExternalStorageState() ) );
+		//SharedPreferences prefs = getSharedPreferences(GooseWidget.PREFS_NAME, 0);
 		
-		if( android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED) )
-		{
-			menuEntries[1] = getString(R.string.menu_view);
-		}
-		else
-		{
-			menuEntries[1] = getString(R.string.menu_view_broken);
-		}
-			
+		menuEntries[1] = getString(R.string.menu_view);
 		menuEntries[2] = getString(R.string.menu_go);
 		menuEntries[3] = getString(R.string.menu_feed);
 		menuEntries[4] = getString(R.string.menu_dev);
-		
+		menuEntries[5] = getString(R.string.menu_prev);
+		menuEntries[6] = getString(R.string.menu_next);
+		// + " (" + ( prefs.getInt("comicPage", 0 ) + 1 ) + "/" + ( prefs.getInt("availPages", 1 ) ) + ")";
 		
 		super.onCreate(savedInstanceState);
 		setListAdapter(new ArrayAdapter<String>(this,R.layout.menu_item, menuEntries));
@@ -41,15 +36,22 @@ public class GooseMenu extends ListActivity
 
 	}
 
+	static int page = 0;
+	
 	@Override
 	protected void onListItemClick(android.widget.ListView l, android.view.View v, int position, long id )
 	{
 		super.onListItemClick(l, v, position, id);
 
+		SharedPreferences prefs = getSharedPreferences(GooseWidget.PREFS_NAME, 0);
+		SharedPreferences.Editor ed = prefs.edit();
+		
+
 		Uri uri;
 		switch( position )
 		{
 		case 0:
+			
 			this.startService(new Intent(this, UpdateService.class));
 			this.finish();
 			break;
@@ -57,8 +59,10 @@ public class GooseMenu extends ListActivity
 			
 			try
 			{			
-				SharedPreferences prefs = getSharedPreferences(GooseWidget.PREFS_NAME, 0);
+				prefs = getSharedPreferences(GooseWidget.PREFS_NAME, 0);
 				String path = prefs.getString("imagePath", "");
+				
+				Log.d("Goose", path);
 				
 				uri = Uri.parse(path);
 				
@@ -76,7 +80,8 @@ public class GooseMenu extends ListActivity
 			    sourceBitmap.compress(Bitmap.CompressFormat.JPEG, 50, outStream);
 			    outStream.close();*/
 				
-				startActivity(new Intent(Intent.ACTION_VIEW, uri));
+				Intent pending = new Intent(Intent.ACTION_VIEW, uri);
+				startActivity(pending);
 			}
 			catch( Exception e)
 			{
@@ -97,6 +102,25 @@ public class GooseMenu extends ListActivity
 		case 4:
 			uri = Uri.parse("http://davidgoemans.com/");
 			startActivity(new Intent(Intent.ACTION_VIEW, uri));
+			this.finish();
+			break;
+		case 5:
+			page++;
+			
+			ed = prefs.edit();
+			ed.putInt("comicPage", page );
+			ed.commit();
+			
+			this.startService(new Intent(this, UpdateService.class));
+			this.finish();
+			break;
+		case 6:
+			page--;
+			
+			ed.putInt("comicPage", page );
+			ed.commit();
+			
+			this.startService(new Intent(this, UpdateService.class));
 			this.finish();
 			break;
 		}

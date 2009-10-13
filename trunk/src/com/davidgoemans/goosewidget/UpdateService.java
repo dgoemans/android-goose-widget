@@ -37,7 +37,7 @@ public class UpdateService extends Service
 {
     @Override
     public void onStart(Intent intent, int startId) 
-    {
+    {		
         RemoteViews updateViews = buildUpdate(this);
         
         AppWidgetManager manager = AppWidgetManager.getInstance(this);
@@ -66,7 +66,7 @@ public class UpdateService extends Service
         URL site;
 		try
 		{
-			current = GetLatestComic("http://abstrusegoose.com/feed", context);
+			current = GetSelectedComic("http://abstrusegoose.com/feed", context);
 			if( current == null ) throw new Exception("Null comic!");
 				
 			views.setTextViewText(R.id.message, current.title);
@@ -85,15 +85,29 @@ public class UpdateService extends Service
             Bitmap intermediate = BitmapFactory.decodeStream(is);
             float ar = (float)intermediate.getWidth()/(float)intermediate.getHeight();
             
-            Log.d("Aspect Ratio:", Float.toString(ar) );
-            Log.d("Width:", Float.toString(intermediate.getWidth()) );
-            Log.d("Height:", Float.toString(intermediate.getHeight()) );
+//            Log.d("Aspect Ratio:", Float.toString(ar) );
+//            Log.d("Width:", Float.toString(intermediate.getWidth()) );
+//            Log.d("Height:", Float.toString(intermediate.getHeight()) );
 
             float size = 400.0f;
             
-            img = Bitmap.createScaledBitmap(intermediate, (int) (size*ar), (int) size, false);
+            if( intermediate.getWidth() < intermediate.getHeight() )
+            {
+            	img = Bitmap.createScaledBitmap(intermediate, (int) (size*ar), (int) size, false);
+            }
+            else
+            {
+            	img = Bitmap.createScaledBitmap(intermediate, (int)size, (int) (size/ar), false);
+            }
             
             // Then create the content file for later!
+
+			OutputStream out =  openFileOutput("current.png", MODE_WORLD_READABLE);
+            intermediate.compress(CompressFormat.PNG, 7, out);
+            out.flush();
+            out.close();
+            
+
 
 			SharedPreferences prefs = getSharedPreferences(GooseWidget.PREFS_NAME, 0);
 			
@@ -141,7 +155,6 @@ public class UpdateService extends Service
         if( img != null )
         {
         	Log.d("img", img.toString() );
-        	
         	views.setImageViewBitmap(R.id.comic_image, img);
         	
         }
@@ -154,8 +167,7 @@ public class UpdateService extends Service
 
     	// When user taps, go to the goose!
         Intent defineIntent = new Intent(context, GooseMenu.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context,
-                0 /* no requestCode */, defineIntent, 0 /* no flags */);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context,0 /* no requestCode */, defineIntent, 0 /* no flags */);
         views.setOnClickPendingIntent(R.id.widget, pendingIntent);
 
         return views;
@@ -169,7 +181,7 @@ public class UpdateService extends Service
     	public String imageURL;
     }
     
-    public ComicData GetLatestComic(String url, Context context) throws Exception
+    public ComicData GetSelectedComic(String url, Context context) throws Exception
     {
     	URL site = new URL(url);
     	
@@ -191,26 +203,37 @@ public class UpdateService extends Service
     	}
     	
     	NodeList itemsXML = doc.getElementsByTagName("item");
-    	for( int i=0; i < itemsXML.getLength(); i++ )
-    	{
-    		Element current = (Element)itemsXML.item(i);
-    		Node title = (Node)current.getElementsByTagName("title").item(0);
-    		Node link = (Node)current.getElementsByTagName("link").item(0);
-    		Node img = (Node)current.getElementsByTagName("content:encoded").item(0);
+    	
+    	SharedPreferences prefs = getSharedPreferences(GooseWidget.PREFS_NAME, 0);
+    	int toGet = prefs.getInt("comicPage", 0);
+		
+    	toGet = Math.min(toGet, itemsXML.getLength()-1);
+    	toGet = Math.max(toGet, 0);
+    	
+    	SharedPreferences.Editor ed = prefs.edit();
+    	ed.putInt("comicPage", toGet);
+    	ed.putInt("availPages", itemsXML.getLength());
+    	ed.commit();
+    	
+    	Log.d("Goose", "Page: " + toGet);
+    	Log.d("Goose", "of: " + itemsXML.getLength());
+    	
+		Element current = (Element)itemsXML.item(toGet);
+		Node title = (Node)current.getElementsByTagName("title").item(0);
+		Node link = (Node)current.getElementsByTagName("link").item(0);
+		Node img = (Node)current.getElementsByTagName("content:encoded").item(0);
+		
+		ComicData data = new ComicData();
+		
+		data.title = title.getFirstChild().getNodeValue();
+		data.link = link.getFirstChild().getNodeValue();
+		
+		String cdata = img.getFirstChild().getNodeValue();
+		int startOfUrl = cdata.indexOf("http://abstrusegoose.com/strips/");
+		int endOfUrl = cdata.indexOf("\"", startOfUrl+1);
+		String actualUrl = cdata.substring(startOfUrl, endOfUrl);
+		data.imageURL = actualUrl;
     		
-    		ComicData data = new ComicData();
-    		
-    		data.title = title.getFirstChild().getNodeValue();
-    		data.link = link.getFirstChild().getNodeValue();
-    		
-    		String cdata = img.getFirstChild().getNodeValue();
-    		int startOfUrl = cdata.indexOf("http://abstrusegoose.com/strips/");
-    		int endOfUrl = cdata.indexOf("\"", startOfUrl+1);
-    		String actualUrl = cdata.substring(startOfUrl, endOfUrl);
-    		data.imageURL = actualUrl;
-    		
-    		return data;
-    	}
-		return null;    	
+		return data;
     }
 }
