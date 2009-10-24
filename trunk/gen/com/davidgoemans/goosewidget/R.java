@@ -35,6 +35,8 @@ public final class R {
         public static final int menu_dev=0x7f05000b;
         public static final int menu_feed=0x7f05000a;
         public static final int menu_go=0x7f050009;
+        public static final int menu_next=0x7f05000d;
+        public static final int menu_prev=0x7f05000c;
         public static final int menu_ref=0x7f050006;
         public static final int menu_view=0x7f050007;
         public static final int menu_view_broken=0x7f050008;

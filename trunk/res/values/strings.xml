@@ -12,6 +12,6 @@
 	<string name="menu_go">Goto the Goose</string>
 	<string name="menu_feed">Feed the Goose</string>
 	<string name="menu_dev">Meet the dev</string>
-	<string name="menu_prev">Prev</string>
-	<string name="menu_next">Next</string>
+	<string name="menu_prev">Older</string>
+	<string name="menu_next">Newer</string>
 </resources>

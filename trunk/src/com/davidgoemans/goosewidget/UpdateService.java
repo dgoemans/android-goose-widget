@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -27,6 +29,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
+import android.os.Environment;
 import android.os.IBinder;
 import android.provider.MediaStore.Images.Media;
 import android.util.Log;
@@ -34,7 +37,7 @@ import android.view.ViewDebug.FlagToString;
 import android.widget.RemoteViews;
 
 public class UpdateService extends Service 
-{
+{	
     @Override
     public void onStart(Intent intent, int startId) 
     {		
@@ -84,10 +87,6 @@ public class UpdateService extends Service
 
             Bitmap intermediate = BitmapFactory.decodeStream(is);
             float ar = (float)intermediate.getWidth()/(float)intermediate.getHeight();
-            
-//            Log.d("Aspect Ratio:", Float.toString(ar) );
-//            Log.d("Width:", Float.toString(intermediate.getWidth()) );
-//            Log.d("Height:", Float.toString(intermediate.getHeight()) );
 
             float size = 400.0f;
             
@@ -102,49 +101,52 @@ public class UpdateService extends Service
             
             // Then create the content file for later!
 
-			OutputStream out =  openFileOutput("current.png", MODE_WORLD_READABLE);
-            intermediate.compress(CompressFormat.PNG, 7, out);
-            out.flush();
-            out.close();
+            SharedPreferences prefs = getSharedPreferences(GooseWidget.PREFS_NAME, 0);
+            SharedPreferences.Editor ed = prefs.edit();
             
-
-
-			SharedPreferences prefs = getSharedPreferences(GooseWidget.PREFS_NAME, 0);
-			
-			SharedPreferences.Editor ed = prefs.edit();
-			ed.putString("imagePath", current.imageURL );
-			ed.commit();
-			
-			/*
-			String path = prefs.getString("imagePath", "");
-			Uri imageUri;
-			if( path.length() == 0 || !(new File(path)).exists()  )
-			{
-				Log.d("Goose", String.valueOf( (new File(path)).exists() ) );
-				Log.d("Goose", path );
+            if( Environment.getExternalStorageState().equals( Environment.MEDIA_MOUNTED ) )
+            {            
+	            File outDir = new File("/sdcard/goose");
+	            if( !outDir.exists() )
+	            {
+	            	outDir.mkdir();
+	            }
+	
+	            Uri path;
+	            if( site.getFile().length() == 0 )
+	            {
+	            	path = Uri.parse("/sdcard/goose/today.png");
+	            }
+	            else
+	            {
+	            	String file = site.getFile();
+	            	int ind = file.lastIndexOf('/');
+	            	file = file.substring(ind);
+	            	path = Uri.parse("/sdcard/goose/" + file);
+	            }
+	            
+	            File outFile = new File(path.toString());
+	            
+	            if (!outFile.exists())
+	            {            	
+	            	outFile.createNewFile();
+	            }
+	            
+	            FileOutputStream out = new FileOutputStream(outFile);
+	
+	            intermediate.compress(CompressFormat.PNG, 7, out);
+	            out.flush();
+	            out.close();
 				
-				imageUri = getContentResolver().insert(Media.EXTERNAL_CONTENT_URI, values);
-
-				SharedPreferences.Editor ed = prefs.edit();
-				ed.putString("imagePath", imageUri.toString() );
+				ed.putString("imagePath", "content://com.davidgoemans.goosewidgetprovider/"+ path.toString() );
 				ed.commit();
-			}
-			else
-			{
-				imageUri = Uri.parse(path);
-			}
 
-			ContentValues values = new ContentValues(2);
-			values.put(Media.DISPLAY_NAME, current.title);
-			//values.put(Media.DESCRIPTION, );
-			values.put(Media.MIME_TYPE, "image/png");
-
-			OutputStream out =  getContentResolver().openOutputStream(imageUri);
-            intermediate.compress(CompressFormat.PNG, 7, out);
-
-            Log.d("Goose", imageUri.toString() );
-            out.flush();
-            out.close();*/
+            }
+            else
+            {
+				ed.putString("imagePath", current.imageURL );
+				ed.commit();
+            }
             
 		} 
     	catch (Exception e) 
@@ -155,17 +157,21 @@ public class UpdateService extends Service
         if( img != null )
         {
         	Log.d("img", img.toString() );
-        	views.setImageViewBitmap(R.id.comic_image, img);
-        	
+        	views.setImageViewBitmap(R.id.comic_image, img);	
         }
         else
         {
         	Log.d("img", "Failed to load");
         	views.setTextViewText(R.id.message, context.getString(R.string.widget_err));
         	views.setImageViewResource(R.id.comic_image, R.drawable.error);
+        	
+        	RunUpdateService failTimerTask = new RunUpdateService();
+        	failTimerTask.context = context;        	
+        	Timer timer = new Timer();
+        	timer.schedule(failTimerTask, 180000);
         }
 
-    	// When user taps, go to the goose!
+    	// When user taps, go to the menu
         Intent defineIntent = new Intent(context, GooseMenu.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(context,0 /* no requestCode */, defineIntent, 0 /* no flags */);
         views.setOnClickPendingIntent(R.id.widget, pendingIntent);
@@ -212,7 +218,7 @@ public class UpdateService extends Service
     	
     	SharedPreferences.Editor ed = prefs.edit();
     	ed.putInt("comicPage", toGet);
-    	ed.putInt("availPages", itemsXML.getLength());
+    	ed.putInt("availPages", itemsXML.getLength() );
     	ed.commit();
     	
     	Log.d("Goose", "Page: " + toGet);
@@ -235,5 +241,20 @@ public class UpdateService extends Service
 		data.imageURL = actualUrl;
     		
 		return data;
+    }
+    
+    
+    class RunUpdateService extends TimerTask 
+    {
+    	public Context context = null;    	
+    	
+    	public void run() 
+    	{
+    		Log.d("Goose", "task!");
+    		if( context != null )
+    		{
+    			startService(new Intent(context, UpdateService.class));
+    		}
+    	}
     }
 }
