@@ -238,6 +238,7 @@ public class UpdateService extends Service
 		int startOfUrl = cdata.indexOf("http://abstrusegoose.com/strips/");
 		int endOfUrl = cdata.indexOf("\"", startOfUrl+1);
 		String actualUrl = cdata.substring(startOfUrl, endOfUrl);
+		actualUrl = actualUrl.replaceAll(" ", "%20");
 		data.imageURL = actualUrl;
     		
 		return data;
