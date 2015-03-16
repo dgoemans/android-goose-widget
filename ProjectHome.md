@@ -1,0 +1,1 @@
+This widget allows the Abstruse Goose to be shown on the Android home screen. Starting features are to show the current comic, with tap to launch a browser window to the selected comic. Later versions will have a menu allowing a choice of comic and a link to Feed the Goose!
